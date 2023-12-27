@@ -62,6 +62,31 @@
                 case '*':
                     AddToken(TokenType.STAR);
                     break;
+                case '!':
+                    AddToken(Match('=') ? TokenType.BANG_EQUAL : TokenType.BANG);
+                    break;
+                case '=':
+                    AddToken(Match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
+                    break;
+                case '<':
+                    AddToken(Match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
+                    break;
+                case '>':
+                    AddToken(Match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER);
+                    break;
+                case '/':
+                    if (Match('/'))
+                    {
+                        while (Peek() != '\n' && !IsAtEnd())
+                        {
+                            Advance();
+                        }
+                    }
+                    else
+                    {
+                        AddToken(TokenType.SLASH);
+                    }
+                    break;
                 default:
                     Program.Error(line, "Unexpected character");
                     break;
@@ -71,6 +96,26 @@
         private bool IsAtEnd() => current >= source.Length;
 
         private char Advance() => source[current++];
+        private char Peek()
+        {
+            if (IsAtEnd())
+            {
+                return '\0';
+            }
+
+            return source[current];
+        }
+
+        private bool Match(char expected)
+        {
+            if (IsAtEnd() || source[current] != expected)
+            {
+                return false;
+            }
+
+            current++;
+            return true;
+        }
 
         private void AddToken(TokenType type)
         {
@@ -82,5 +127,6 @@
             var text = source.Substring(start, current);
             tokens.Add(new Token(type, text, literal, line));
         }
+
     }
 }
