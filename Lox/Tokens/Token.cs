@@ -1,4 +1,4 @@
-﻿namespace Lox
+﻿namespace Lox.Tokens
 {
     internal class Token
     {

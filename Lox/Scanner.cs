@@ -1,4 +1,6 @@
-﻿namespace Lox
+﻿using Lox.Tokens;
+
+namespace Lox
 {
     internal class Scanner
     {
