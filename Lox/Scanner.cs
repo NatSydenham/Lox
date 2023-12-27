@@ -7,7 +7,7 @@
         private readonly List<Token> tokens = new();
         private static readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>
         {
-            {"and", TokenType.AND },
+            { "and", TokenType.AND },
             { "class", TokenType.CLASS },
             { "else", TokenType.ELSE },
             { "false", TokenType.FALSE },
