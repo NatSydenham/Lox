@@ -57,7 +57,13 @@ namespace Lox
 
         private static void Run(string source)
         {
-            Console.WriteLine(source);
+            var scanner = new Scanner(source);
+            var tokens = scanner.ScanTokens();
+
+            foreach(var token in tokens)
+            {
+                Console.WriteLine(token.ToString());
+            }
         }
 
         public static void Error(int line, string message)

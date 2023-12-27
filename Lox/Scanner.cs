@@ -3,7 +3,27 @@
     internal class Scanner
     {
         private readonly string source;
-        private readonly List<Token> tokens;
+
+        private readonly List<Token> tokens = new();
+        private static readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>
+        {
+            {"and", TokenType.AND },
+            { "class", TokenType.CLASS },
+            { "else", TokenType.ELSE },
+            { "false", TokenType.FALSE },
+            { "for", TokenType.FOR },
+            { "fun", TokenType.FUN },
+            { "if", TokenType.IF },
+            { "nil", TokenType.NIL },
+            { "or", TokenType.OR },
+            { "print", TokenType.PRINT },
+            { "return", TokenType.RETURN },
+            { "super", TokenType.SUPER },
+            { "this", TokenType.THIS },
+            { "true", TokenType.TRUE },
+            { "var", TokenType.VAR },
+            { "while", TokenType.WHILE }
+        };
 
         private int start = 0;
         private int current = 0;
@@ -12,10 +32,9 @@
         public Scanner(string source)
         {
             this.source = source;
-            this.tokens = new List<Token>();
         }
 
-        List<Token> ScanTokens()
+        public List<Token> ScanTokens()
         {
             while (!IsAtEnd())
             {
@@ -87,13 +106,39 @@
                         AddToken(TokenType.SLASH);
                     }
                     break;
+                case ' ':
+                case '\r':
+                case '\t':
+                    //Ignore whitespace
+                    break;
+                case '\n':
+                    line++;
+                    break;
+                case '"':
+                    String();
+                    break;
                 default:
-                    Program.Error(line, "Unexpected character");
+                    if (IsDigit(c))
+                    {
+                        Number();
+                    }
+                    if (IsAlpha(c))
+                    {
+                        Identifier();
+                    }
+                    else
+                    {
+                        Program.Error(line, "Unexpected character");
+                    }
                     break;
             }
         }
 
+
         private bool IsAtEnd() => current >= source.Length;
+        private bool IsDigit(char c) => c >= '0' && c <= '9';
+        private bool IsAlpha(char c) => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+        private bool IsAlphaNumeric(char c) => IsAlpha(c) || IsDigit(c);
 
         private char Advance() => source[current++];
         private char Peek()
@@ -104,6 +149,16 @@
             }
 
             return source[current];
+        }
+
+        private char PeekNext()
+        {
+            if (current + 1 >= source.Length)
+            {
+                return '\0';
+            }
+
+            return source[current + 1];
         }
 
         private bool Match(char expected)
@@ -124,9 +179,66 @@
 
         private void AddToken(TokenType type, object literal)
         {
-            var text = source.Substring(start, current);
+            var text = source.Substring(start, current - start);
             tokens.Add(new Token(type, text, literal, line));
         }
 
+        private void String()
+        {
+            while (Peek() != '"' && !IsAtEnd())
+            {
+                if (Peek() == '\n')
+                {
+                    line++;
+                }
+
+                Advance();
+            }
+
+            if (IsAtEnd())
+            {
+                Program.Error(line, "Unterminated string");
+                return;
+            }
+
+            // This is the closing "
+            Advance();
+
+            var value = source.Substring(start + 1, current - start - 2);
+            AddToken(TokenType.STRING, value);
+        }
+
+        private void Number()
+        {
+            while (IsDigit(Peek()))
+            {
+                Advance();
+            }
+
+            if (Peek() == '.' && IsDigit(PeekNext()))
+            {
+                Advance();
+            }
+
+            AddToken(TokenType.NUMBER, double.Parse(source.Substring(start, current - start)));
+        }
+
+        private void Identifier()
+        {
+            while (IsAlphaNumeric(Peek()))
+            {
+                Advance();
+            }
+
+            var text = source.Substring(start, current - start);
+            if (keywords.TryGetValue(text, out var type))
+            {
+                AddToken(type);
+            }
+            else
+            {
+                AddToken(TokenType.IDENTIFIER);
+            }
+        }
     }
 }
