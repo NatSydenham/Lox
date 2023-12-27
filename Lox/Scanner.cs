@@ -101,6 +101,10 @@
                             Advance();
                         }
                     }
+                    else if (Match('*'))
+                    {
+                        BlockComment();
+                    }
                     else
                     {
                         AddToken(TokenType.SLASH);
@@ -181,6 +185,29 @@
         {
             var text = source.Substring(start, current - start);
             tokens.Add(new Token(type, text, literal, line));
+        }
+
+        private void BlockComment()
+        {
+            while (Peek() != '*' && PeekNext() != '/' && !IsAtEnd())
+            {
+                if (Peek() == '\n')
+                {
+                    line++;
+                }
+
+                Advance();
+            }
+
+            if (IsAtEnd())
+            {
+                Program.Error(line, "Unterminated block comment");
+                return;
+            }
+
+            // Advance over the ending */
+            Advance();
+            Advance();
         }
 
         private void String()
