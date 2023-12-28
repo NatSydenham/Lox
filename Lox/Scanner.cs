@@ -128,7 +128,7 @@ namespace Lox
                     {
                         Number();
                     }
-                    if (IsAlpha(c))
+                    else if (IsAlpha(c))
                     {
                         Identifier();
                     }
