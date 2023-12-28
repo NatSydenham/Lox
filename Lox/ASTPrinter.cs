@@ -5,31 +5,21 @@ namespace Lox
     internal class ASTPrinter : IVisitor<string>
     {
         public string VisitBinaryExpr(Binary expr)
-        {
-            return Parenthesize(expr.Op.Lexeme);
-        }
+            => Parenthesize(expr.Op.Lexeme, expr.Left, expr.Right);
 
         public string VisitGroupingExpr(Grouping expr)
-        {
-            throw new NotImplementedException();
-        }
+            => Parenthesize("group", expr.Expression);
 
         public string VisitLiteralExpr(Literal expr)
-        {
-            throw new NotImplementedException();
-        }
+            => expr.Value is null ? "nil" : (expr.Value.ToString() ?? string.Empty);
 
         public string VisitUnaryExpr(Unary expr)
-        {
-            throw new NotImplementedException();
-        }
+            => Parenthesize(expr.Op.Lexeme, expr.Right);
 
         public string Print(Expr expr)
-        {
-            return expr.Accept(this);
-        }
+            => expr.Accept(this);
 
-
+        // Recursively print expression tree
         private string Parenthesize(string name, params Expr[] exprs)
         {
             var builder = new StringBuilder();
