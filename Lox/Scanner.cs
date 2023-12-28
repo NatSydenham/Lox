@@ -2,7 +2,7 @@
 
 namespace Lox
 {
-    internal class Scanner
+    public class Scanner
     {
         private readonly string source;
 
@@ -44,7 +44,7 @@ namespace Lox
                 ScanToken();
             }
 
-            tokens.Add(new Token(TokenType.EOF, "", null, line));
+            tokens.Add(new Token { Type = TokenType.EOF, Lexeme = string.Empty, Literal = null, Line = line });
             return tokens;
         }
 
@@ -186,7 +186,7 @@ namespace Lox
         private void AddToken(TokenType type, object literal)
         {
             var text = source.Substring(start, current - start);
-            tokens.Add(new Token(type, text, literal, line));
+            tokens.Add(new Token { Type = type, Lexeme = text, Literal = literal, Line = line });
         }
 
         private void BlockComment()

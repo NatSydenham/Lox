@@ -2,11 +2,11 @@ using Lox.Tokens;
 
 namespace Lox
 {
-    internal abstract class Expr
+    public abstract class Expr
     {
-        internal abstract T Accept<T>(IVisitor<T> visitor);
+        public abstract T Accept<T>(IVisitor<T> visitor);
     }
-    internal interface IVisitor<T>
+    public interface IVisitor<T>
     {
         T VisitBinaryExpr(Binary expr);
         T VisitGroupingExpr(Grouping expr);
@@ -14,67 +14,48 @@ namespace Lox
         T VisitUnaryExpr(Unary expr);
     }
 
-    internal class Binary : Expr
+    public class Binary : Expr
     {
-        public Expr Left { get; }
-        public Token Op { get; }
-        public Expr Right { get; }
+        public Expr Left { get; init; }
+        public Token Op { get; init; }
+        public Expr Right { get; init; }
 
-        public Binary(Expr left, Token op, Expr right)
-        {
-            this.Left = left;
-            this.Op = op;
-            this.Right = right;
-        }
 
-        internal override T Accept<T>(IVisitor<T> visitor)
+        public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitBinaryExpr(this);
         }
     }
 
-    internal class Grouping : Expr
+    public class Grouping : Expr
     {
-        public Expr Expression { get; }
+        public Expr Expression { get; init; }
 
-        public Grouping(Expr expression)
-        {
-            this.Expression = expression;
-        }
 
-        internal override T Accept<T>(IVisitor<T> visitor)
+        public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitGroupingExpr(this);
         }
     }
 
-    internal class Literal : Expr
+    public class Literal : Expr
     {
-        public object Value { get; }
+        public object Value { get; init; }
 
-        public Literal(object value)
-        {
-            this.Value = value;
-        }
 
-        internal override T Accept<T>(IVisitor<T> visitor)
+        public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitLiteralExpr(this);
         }
     }
 
-    internal class Unary : Expr
+    public class Unary : Expr
     {
-        public Token Op { get; }
-        public Expr Right { get; }
+        public Token Op { get; init; }
+        public Expr Right { get; init; }
 
-        public Unary(Token op, Expr right)
-        {
-            this.Op = op;
-            this.Right = right;
-        }
 
-        internal override T Accept<T>(IVisitor<T> visitor)
+        public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitUnaryExpr(this);
         }

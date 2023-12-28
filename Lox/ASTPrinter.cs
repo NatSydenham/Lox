@@ -6,7 +6,7 @@ namespace Lox
     {
         public string VisitBinaryExpr(Binary expr)
         {
-            return Parenthesize(expr.op)
+            return Parenthesize(expr.Op.Lexeme);
         }
 
         public string VisitGroupingExpr(Grouping expr)
