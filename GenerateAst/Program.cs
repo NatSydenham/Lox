@@ -42,8 +42,10 @@
                 outFile.WriteLine("{");
                 outFile.WriteLine($"    internal abstract class {baseName}");
                 outFile.WriteLine("    {");
+                outFile.WriteLine("        internal abstract T Accept<T>(IVisitor<T> visitor);");
                 outFile.WriteLine("    }");
 
+                DefineVisitor(outFile, baseName, types);
 
                 // Write derived classes
                 foreach (var type in types)
@@ -87,8 +89,25 @@
             }
 
             writer.WriteLine("        }");
+            writer.WriteLine("");
+            writer.WriteLine("        internal override T Accept<T>(IVisitor<T> visitor)");
+            writer.WriteLine("        {");
+            writer.WriteLine($"            return visitor.Visit{className}{baseName}(this);");
+            writer.WriteLine("        }");
 
             writer.WriteLine("    }");
         }
+        private static void DefineVisitor(StreamWriter writer, string baseName, List<string> types)
+        {
+            writer.WriteLine("    internal interface IVisitor<T>");
+            writer.WriteLine("    {");
+            foreach (var type in types)
+            {
+                var typeName = type.Split(":")[0].Trim();
+                writer.WriteLine($"        T Visit{typeName}{baseName}({typeName} {baseName.ToLower()});");
+            }
+            writer.WriteLine("    }");
+        }
     }
+
 }
