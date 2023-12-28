@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Lox.Tokens;
+using System.Text;
 
 namespace Lox
 {
@@ -60,15 +61,33 @@ namespace Lox
             var scanner = new Scanner(source);
             var tokens = scanner.ScanTokens();
 
-            foreach(var token in tokens)
+            var parser = new Parser(tokens);
+            var tree = parser.Parse();
+
+            if (hadError)
             {
-                Console.WriteLine(token.ToString());
+                return;
             }
+
+            var printer = new ASTPrinter();
+            Console.WriteLine(printer.Print(tree));
         }
 
         public static void Error(int line, string message)
         {
             Report(line, "", message);
+        }
+
+        public static void Error(Token token, string message)
+        {
+            if (token.Type == TokenType.EOF)
+            {
+                Report(token.Line, " at end", message);
+            }
+            else
+            {
+                Report(token.Line, $" at '{token.Lexeme}'", message);
+            }
         }
 
         private static void Report(int line, string where, string message)
