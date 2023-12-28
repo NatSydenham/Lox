@@ -73,7 +73,9 @@
             // Fields
             foreach (var field in fields)
             {
-                writer.WriteLine($"        private readonly {field};");
+                var typeName = field.Split(" ")[0];
+                var fieldName = field.Split(" ")[1];
+                writer.WriteLine($"        public {typeName} {char.ToUpper(fieldName[0])}{fieldName.Substring(1)} {{ get; }}");
             }
 
             writer.WriteLine("");
@@ -84,8 +86,8 @@
 
             foreach(var field in fields)
             {
-                var name = field.Split(" ")[1];
-                writer.WriteLine($"            this.{name} = {name};");
+                var fieldName = field.Split(" ")[1];
+                writer.WriteLine($"            this.{char.ToUpper(fieldName[0])}{fieldName.Substring(1)} = {fieldName};");
             }
 
             writer.WriteLine("        }");

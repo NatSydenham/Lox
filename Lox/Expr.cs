@@ -16,15 +16,15 @@ namespace Lox
 
     internal class Binary : Expr
     {
-        private readonly Expr left;
-        private readonly Token op;
-        private readonly Expr right;
+        public Expr Left { get; }
+        public Token Op { get; }
+        public Expr Right { get; }
 
         public Binary(Expr left, Token op, Expr right)
         {
-            this.left = left;
-            this.op = op;
-            this.right = right;
+            this.Left = left;
+            this.Op = op;
+            this.Right = right;
         }
 
         internal override T Accept<T>(IVisitor<T> visitor)
@@ -35,11 +35,11 @@ namespace Lox
 
     internal class Grouping : Expr
     {
-        private readonly Expr expression;
+        public Expr Expression { get; }
 
         public Grouping(Expr expression)
         {
-            this.expression = expression;
+            this.Expression = expression;
         }
 
         internal override T Accept<T>(IVisitor<T> visitor)
@@ -50,11 +50,11 @@ namespace Lox
 
     internal class Literal : Expr
     {
-        private readonly object value;
+        public object Value { get; }
 
         public Literal(object value)
         {
-            this.value = value;
+            this.Value = value;
         }
 
         internal override T Accept<T>(IVisitor<T> visitor)
@@ -65,13 +65,13 @@ namespace Lox
 
     internal class Unary : Expr
     {
-        private readonly Token op;
-        private readonly Expr right;
+        public Token Op { get; }
+        public Expr Right { get; }
 
         public Unary(Token op, Expr right)
         {
-            this.op = op;
-            this.right = right;
+            this.Op = op;
+            this.Right = right;
         }
 
         internal override T Accept<T>(IVisitor<T> visitor)
