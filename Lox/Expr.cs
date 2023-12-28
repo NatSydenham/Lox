@@ -13,6 +13,7 @@ namespace Lox
         T VisitGroupingExpr(Grouping expr);
         T VisitLiteralExpr(Literal expr);
         T VisitUnaryExpr(Unary expr);
+        T VisitConditionalExpr(Conditional expr);
     }
 
     public class Binary : Expr
@@ -55,6 +56,18 @@ namespace Lox
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitUnaryExpr(this);
+        }
+    }
+
+    public class Conditional : Expr
+    {
+        public Expr Left { get; init; }
+        public Expr ThenBranch { get; init; }
+        public Expr ElseBranch { get; init; }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitConditionalExpr(this);
         }
     }
 }

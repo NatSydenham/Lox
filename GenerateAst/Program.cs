@@ -15,10 +15,11 @@
             var outDir = args[0];
             var types = new List<string>
             {
-                "Binary   : Expr left, Token op, Expr right",
-                "Grouping : Expr expression",
-                "Literal  : object value",
-                "Unary    : Token op, Expr right"
+                "Binary      : Expr left, Token op, Expr right",
+                "Grouping    : Expr expression",
+                "Literal     : object value",
+                "Unary       : Token op, Expr right",
+                "Conditional : Expr left, Expr thenBranch, Expr elseBranch"
             };
 
             DefineAst(outDir, "Expr", types);

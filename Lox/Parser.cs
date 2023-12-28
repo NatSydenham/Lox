@@ -26,7 +26,34 @@ namespace Lox
 
         private Expr Expression()
         {
-            return Equality();
+            return Comma();
+        }
+
+        private Expr Comma()
+        {
+            var expr = Conditional();
+            while (Match(TokenType.COMMA))
+            {
+                var op = Previous();
+                var right = Conditional();
+                expr = new Binary { Left = expr, Op = op, Right = right };
+            }
+
+            return expr;
+        }
+
+        private Expr Conditional()
+        {
+            var expr = Equality();
+            if (Match(TokenType.QUESTION))
+            {
+                var then = Expression();
+                Consume(TokenType.COLON, "Expect ':' after then branch of conditional");
+                var elseBranch = Conditional();
+                expr = new Conditional { Left = expr, ThenBranch = then, ElseBranch = elseBranch };
+            }
+
+            return expr;
         }
 
         private Expr Equality()
@@ -117,6 +144,34 @@ namespace Lox
                 var expr = Expression();
                 Consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
                 return new Grouping { Expression = expr };
+            }
+
+            if (Match(TokenType.BANG, TokenType.BANG_EQUAL))
+            {
+                Error(Previous(), "Missing left hand operand");
+                Equality();
+                return null;
+            }
+
+            if (Match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL))
+            {
+                Error(Previous(), "Missing left hand operand");
+                Comparison();
+                return null;
+            }
+
+            if (Match(TokenType.PLUS))
+            {
+                Error(Previous(), "Missing left hand operand");
+                Term();
+                return null;
+            }
+
+            if (Match(TokenType.STAR, TokenType.SLASH))
+            {
+                Error(Previous(), "Missing left hand operand");
+                Factor();
+                return null;
             }
 
             throw Error(Peek(), "Expect expression.");

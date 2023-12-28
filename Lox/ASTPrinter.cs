@@ -16,6 +16,9 @@ namespace Lox
         public string VisitUnaryExpr(Unary expr)
             => Parenthesize(expr.Op.Lexeme, expr.Right);
 
+        public string VisitConditionalExpr(Conditional expr)
+            => Parenthesize("conditional", expr.Left, expr.ThenBranch, expr.ElseBranch);
+
         public string Print(Expr expr)
             => expr.Accept(this);
 
