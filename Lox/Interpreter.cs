@@ -26,6 +26,8 @@ namespace Lox
                 case TokenType.MINUS:
                     CheckNumberOperands(expr.Op, left, right);
                     return (double)left - (double)right;
+                case TokenType.COMMA:
+                    return right;
                 case TokenType.SLASH:
                     CheckNumberOperands(expr.Op, left, right);
                     if ((double) right == 0)

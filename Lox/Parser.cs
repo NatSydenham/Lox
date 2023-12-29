@@ -81,12 +81,25 @@ namespace Lox
 
         private Expr Expression()
         {
-            return Assignment();
+            return Comma();
         }
+        private Expr Comma()
+        {
+            var expr = Assignment();
+            while (Match(TokenType.COMMA))
+            {
+                var op = Previous();
+                var right = Assignment();
+                expr = new Binary { Left = expr, Op = op, Right = right };
+            }
+
+            return expr;
+        }
+
 
         private Expr Assignment()
         {
-            var expr = Comma();
+            var expr = Conditional();
 
             if (Match(TokenType.EQUAL))
             {
@@ -100,19 +113,6 @@ namespace Lox
                 }
 
                 Error(equals, "Invalid assignment target.");
-            }
-
-            return expr;
-        }
-
-        private Expr Comma()
-        {
-            var expr = Conditional();
-            while (Match(TokenType.COMMA))
-            {
-                var op = Previous();
-                var right = Conditional();
-                expr = new Binary { Left = expr, Op = op, Right = right };
             }
 
             return expr;
