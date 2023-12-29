@@ -4,10 +4,10 @@ namespace Lox
 {
     public abstract class Expr
     {
-        public abstract T Accept<T>(IVisitor<T> visitor);
+        public abstract T Accept<T>(IExprVisitor<T> visitor);
     }
 
-    public interface IVisitor<T>
+    public interface IExprVisitor<T>
     {
         T VisitBinaryExpr(Binary expr);
         T VisitGroupingExpr(Grouping expr);
@@ -22,7 +22,7 @@ namespace Lox
         public Token Op { get; init; }
         public Expr Right { get; init; }
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override T Accept<T>(IExprVisitor<T> visitor)
         {
             return visitor.VisitBinaryExpr(this);
         }
@@ -32,7 +32,7 @@ namespace Lox
     {
         public Expr Expression { get; init; }
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override T Accept<T>(IExprVisitor<T> visitor)
         {
             return visitor.VisitGroupingExpr(this);
         }
@@ -42,7 +42,7 @@ namespace Lox
     {
         public object Value { get; init; }
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override T Accept<T>(IExprVisitor<T> visitor)
         {
             return visitor.VisitLiteralExpr(this);
         }
@@ -53,7 +53,7 @@ namespace Lox
         public Token Op { get; init; }
         public Expr Right { get; init; }
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override T Accept<T>(IExprVisitor<T> visitor)
         {
             return visitor.VisitUnaryExpr(this);
         }
@@ -65,7 +65,7 @@ namespace Lox
         public Expr ThenBranch { get; init; }
         public Expr ElseBranch { get; init; }
 
-        public override T Accept<T>(IVisitor<T> visitor)
+        public override T Accept<T>(IExprVisitor<T> visitor)
         {
             return visitor.VisitConditionalExpr(this);
         }

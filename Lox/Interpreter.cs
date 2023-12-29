@@ -2,7 +2,7 @@
 
 namespace Lox
 {
-    public class Interpreter : IVisitor<object>
+    public class Interpreter : IExprVisitor<object>, IStmtVisitor<object>
     {
         public object VisitBinaryExpr(Binary expr)
         {
@@ -77,6 +77,16 @@ namespace Lox
             }
 
             throw new RuntimeError(expr.Op, $"Unexpected parsing of {expr.Op.Type} as Unary");
+        }
+
+        public object VisitExpressionStmt(Expression stmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object VisitPrintStmt(Print stmt)
+        {
+            throw new NotImplementedException();
         }
 
         public void Interpret(Expr expression)
