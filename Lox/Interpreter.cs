@@ -57,11 +57,7 @@ namespace Lox
             return null;
         }
 
-        public object VisitConditionalExpr(Conditional expr)
-        {
-            throw new NotImplementedException();
-        }
-
+        public object VisitConditionalExpr(Conditional expr) => IsTruthy(Evaluate(expr.Left)) ? Evaluate(expr.ThenBranch) : Evaluate(expr.ElseBranch);
         public object VisitGroupingExpr(Grouping expr) => Evaluate(expr.Expression);
 
         public object VisitLiteralExpr(Literal expr) => expr.Value;
