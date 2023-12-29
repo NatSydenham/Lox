@@ -1,6 +1,6 @@
 ﻿namespace Lox
 {
-    public class ParseError : AggregateException
+    public class ParseError : Exception
     {
     }
 }

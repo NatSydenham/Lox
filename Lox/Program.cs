@@ -7,8 +7,13 @@ namespace Lox
     {
         private const int ARGS_LENGTH = 1;
         private const int INCORRECT_USAGE = 64;
+        private const int ERROR = 65;
+        private const int RUNTIME_ERROR = 70;
+
+        private static readonly Interpreter interpreter = new Interpreter();
 
         private static bool hadError = false;
+        private static bool hadRuntimeError = false;
         public static void Main(string[] args)
         {
             if (args.Length > ARGS_LENGTH)
@@ -32,7 +37,11 @@ namespace Lox
             Run(Encoding.UTF8.GetString(bytes));
             if (hadError)
             {
-                Environment.Exit(INCORRECT_USAGE);
+                Environment.Exit(ERROR);
+            }
+            if (hadRuntimeError)
+            {
+                Environment.Exit(RUNTIME_ERROR);
             }
         }
 
@@ -69,8 +78,7 @@ namespace Lox
                 return;
             }
 
-            var printer = new ASTPrinter();
-            Console.WriteLine(printer.Print(tree));
+            interpreter.Interpret(tree);
         }
 
         public static void Error(int line, string message)
@@ -88,6 +96,12 @@ namespace Lox
             {
                 Report(token.Line, $" at '{token.Lexeme}'", message);
             }
+        }
+
+        public static void RuntimeError(RuntimeError error)
+        {
+            Console.Error.WriteLine($"{error.Message}\n[line {error.token.Line}]");
+            hadRuntimeError = true;
         }
 
         private static void Report(int line, string where, string message)
