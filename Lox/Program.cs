@@ -19,7 +19,7 @@ namespace Lox
             if (args.Length > ARGS_LENGTH)
             {
                 Console.WriteLine("Usage: dotnet lox.dll [script]");
-                Environment.Exit(INCORRECT_USAGE);
+                System.Environment.Exit(INCORRECT_USAGE);
             }
             else if (args.Length == ARGS_LENGTH)
             {
@@ -37,11 +37,11 @@ namespace Lox
             Run(Encoding.UTF8.GetString(bytes));
             if (hadError)
             {
-                Environment.Exit(ERROR);
+                System.Environment.Exit(ERROR);
             }
             if (hadRuntimeError)
             {
-                Environment.Exit(RUNTIME_ERROR);
+                System.Environment.Exit(RUNTIME_ERROR);
             }
         }
 

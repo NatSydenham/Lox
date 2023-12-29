@@ -4,6 +4,8 @@ namespace Lox
 {
     public class Interpreter : IExprVisitor<object>, IStmtVisitor<object>
     {
+        private readonly Environment env = new();
+
         public object VisitBinaryExpr(Binary expr)
         {
             var left = Evaluate(expr.Left);
@@ -79,6 +81,12 @@ namespace Lox
             throw new RuntimeError(expr.Op, $"Unexpected parsing of {expr.Op.Type} as Unary");
         }
 
+        public object VisitVariableExpr(Variable expr)
+        {
+            return env.Get(expr.Name);
+        }
+
+
         public object VisitExpressionStmt(Expression stmt)
         {
             Evaluate(stmt.Expr);
@@ -89,6 +97,17 @@ namespace Lox
         {
             var value = Evaluate(stmt.Expr);
             Console.WriteLine(Stringify(value));
+            return null;
+        }
+        public object VisitVarStmt(Var stmt)
+        {
+            object value = null;
+            if (stmt.Initialiser is not null)
+            {
+                value = Evaluate(stmt.Initialiser);
+            }
+
+            env.Define(stmt.Name.Lexeme, value);
             return null;
         }
 
@@ -181,5 +200,7 @@ namespace Lox
 
             return left.Equals(right);
         }
+
+
     }
 }

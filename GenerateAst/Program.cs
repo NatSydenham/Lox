@@ -20,13 +20,15 @@
                 "Grouping    : Expr expression",
                 "Literal     : object value",
                 "Unary       : Token op, Expr right",
-                "Conditional : Expr left, Expr thenBranch, Expr elseBranch"
+                "Conditional : Expr left, Expr thenBranch, Expr elseBranch",
+                "Variable    : Token name"
             });
 
             DefineAst(outDir, "Stmt", new List<string>
             {
                 "Expression : Expr expr",
-                "Print      : Expr expr"
+                "Print      : Expr expr",
+                "Var        : Token name, Expr initialiser"
             });
         }
 

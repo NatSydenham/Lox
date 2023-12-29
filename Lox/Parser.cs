@@ -17,9 +17,29 @@ namespace Lox
             List<Stmt> statements = new List<Stmt>();
             while (!IsAtEnd())
             {
-                statements.Add(Statement());
+                statements.Add(Declaration());
             }
             return statements;
+        }
+
+        private Stmt Declaration()
+        {
+            try
+            {
+                if (Match(TokenType.VAR))
+                {
+                    return VarDeclaration();
+                }
+
+                return Statement();
+
+            }
+
+            catch (ParseError e)
+            {
+                Synchronise();
+                return null;
+            }
         }
 
         private Stmt Statement()
@@ -43,6 +63,20 @@ namespace Lox
             var value = Expression();
             Consume(TokenType.SEMICOLON, "Expect ';' after value");
             return new Print { Expr = value };
+        }
+
+        private Stmt VarDeclaration()
+        {
+            var name = Consume(TokenType.IDENTIFIER, "Expect variable name.");
+            Expr initialiser = null;
+
+            if (Match(TokenType.EQUAL))
+            {
+                initialiser = Expression();
+            }
+
+            Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+            return new Var { Initialiser = initialiser, Name = name };
         }
 
         private Expr Expression()
@@ -160,12 +194,18 @@ namespace Lox
                 return new Literal { Value = Previous().Literal };
             }
 
+            if (Match(TokenType.IDENTIFIER))
+            {
+                return new Variable { Name = Previous() };
+            }
+
             if (Match(TokenType.LEFT_PAREN))
             {
                 var expr = Expression();
                 Consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
                 return new Grouping { Expression = expr };
             }
+
 
             if (Match(TokenType.BANG, TokenType.BANG_EQUAL))
             {
@@ -194,6 +234,8 @@ namespace Lox
                 Factor();
                 return null;
             }
+
+
 
             throw Error(Peek(), "Expect expression.");
         }
