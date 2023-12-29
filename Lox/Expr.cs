@@ -14,12 +14,24 @@ namespace Lox
 
     public interface IExprVisitor<T>
     {
+        T VisitAssignExpr(Assign expr);
         T VisitBinaryExpr(Binary expr);
         T VisitGroupingExpr(Grouping expr);
         T VisitLiteralExpr(Literal expr);
         T VisitUnaryExpr(Unary expr);
         T VisitConditionalExpr(Conditional expr);
         T VisitVariableExpr(Variable expr);
+    }
+
+    public class Assign : Expr
+    {
+        public Token Name { get; init; }
+        public Expr Value { get; init; }
+
+        public override T Accept<T>(IExprVisitor<T> visitor)
+        {
+            return visitor.VisitAssignExpr(this);
+        }
     }
 
     public class Binary : Expr

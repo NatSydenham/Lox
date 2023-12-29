@@ -16,6 +16,7 @@
             
             DefineAst(outDir, "Expr", new List<string>
             {
+                "Assign      : Token name, Expr value",
                 "Binary      : Expr left, Token op, Expr right",
                 "Grouping    : Expr expression",
                 "Literal     : object value",

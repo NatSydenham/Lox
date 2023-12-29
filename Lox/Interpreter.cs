@@ -77,6 +77,13 @@ namespace Lox
             throw new RuntimeError(expr.Op, $"Unexpected parsing of {expr.Op.Type} as Unary");
         }
 
+        public object VisitAssignExpr(Assign expr)
+        {
+            var value = Evaluate(expr.Value);
+            env.Assign(expr.Name, value);
+            return value;
+        }
+
         public object VisitVariableExpr(Variable expr)
         {
             return env.Get(expr.Name);
@@ -196,7 +203,5 @@ namespace Lox
 
             return left.Equals(right);
         }
-
-
     }
 }
