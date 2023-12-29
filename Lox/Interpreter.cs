@@ -16,16 +16,20 @@ namespace Lox
                     {
                         return (double)left + (double)right;
                     }
-                    if (left is string && right is string)
+                    if (left is string || right is string)
                     {
                         return $"{left}{right}";
                     }
-                    throw new RuntimeError(expr.Op, "Operands must be two numbers or two strings");
+                    throw new RuntimeError(expr.Op, "Operands must be two numbers or at least one string");
                 case TokenType.MINUS:
                     CheckNumberOperands(expr.Op, left, right);
                     return (double)left - (double)right;
                 case TokenType.SLASH:
                     CheckNumberOperands(expr.Op, left, right);
+                    if ((double) right == 0)
+                    {
+                        throw new RuntimeError(expr.Op, "Cannot divide by zero");
+                    }
                     return (double)left / (double)right;
                 case TokenType.STAR:
                     CheckNumberOperands(expr.Op, left, right);
@@ -72,9 +76,7 @@ namespace Lox
                     return !IsTruthy(right);
             }
 
-            // Should be unreachable
-
-            return null;
+            throw new RuntimeError(expr.Op, $"Unexpected parsing of {expr.Op.Type} as Unary");
         }
 
         public void Interpret(Expr expression)
