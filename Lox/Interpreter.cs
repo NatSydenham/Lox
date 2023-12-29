@@ -81,25 +81,35 @@ namespace Lox
 
         public object VisitExpressionStmt(Expression stmt)
         {
-            throw new NotImplementedException();
+            Evaluate(stmt.Expr);
+            return null;
         }
 
         public object VisitPrintStmt(Print stmt)
         {
-            throw new NotImplementedException();
+            var value = Evaluate(stmt.Expr);
+            Console.WriteLine(Stringify(value));
+            return null;
         }
 
-        public void Interpret(Expr expression)
+        public void Interpret(List<Stmt> statements)
         {
             try
             {
-                var value = Evaluate(expression);
-                Console.WriteLine(Stringify(value));
+                foreach(var stmt in statements)
+                {
+                    Execute(stmt);
+                }
             }
             catch(RuntimeError err)
             {
                 Program.RuntimeError(err);
             }
+        }
+
+        private void Execute(Stmt stmt)
+        {
+            stmt.Accept(this);
         }
 
         private string Stringify(object? value)

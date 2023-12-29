@@ -71,14 +71,14 @@ namespace Lox
             var tokens = scanner.ScanTokens();
 
             var parser = new Parser(tokens);
-            var tree = parser.Parse();
+            var statements = parser.Parse();
 
             if (hadError)
             {
                 return;
             }
 
-            interpreter.Interpret(tree);
+            interpreter.Interpret(statements);
         }
 
         public static void Error(int line, string message)

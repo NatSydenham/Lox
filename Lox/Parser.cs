@@ -12,16 +12,37 @@ namespace Lox
             this.tokens = tokens;
         }
 
-        public Expr Parse()
+        public List<Stmt> Parse()
         {
-            try
+            List<Stmt> statements = new List<Stmt>();
+            while (!IsAtEnd())
             {
-                return Expression();
+                statements.Add(Statement());
             }
-            catch(ParseError e)
-            {
-                return null;
+            return statements;
+        }
+
+        private Stmt Statement()
+        {
+            if (Match(TokenType.PRINT)) {
+                return PrintStatement();
             }
+
+            return ExpressionStatement();
+        }
+
+        private Stmt ExpressionStatement()
+        {
+            var value = Expression();
+            Consume(TokenType.SEMICOLON, "Expect ';' after expression");
+            return new Expression { Expr = value };
+        }
+
+        private Stmt PrintStatement()
+        {
+            var value = Expression();
+            Consume(TokenType.SEMICOLON, "Expect ';' after value");
+            return new Print { Expr = value };
         }
 
         private Expr Expression()
