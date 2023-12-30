@@ -7,6 +7,8 @@ namespace Lox
     {
         private Environment env = new(null);
 
+        private static object uninitialised = new object();
+
         public object VisitBinaryExpr(Binary expr)
         {
             var left = InterpreterHelpers.Evaluate(this, expr.Left);
@@ -94,7 +96,14 @@ namespace Lox
 
         public object VisitVariableExpr(Variable expr)
         {
-            return env.Get(expr.Name);
+            var value = env.Get(expr.Name);
+
+            if (value == uninitialised)
+            {
+                throw new RuntimeError(expr.Name, "Must initialise variable before use");
+            }
+
+            return value;
         }
 
         public object VisitExpressionStmt(Expression stmt)
@@ -131,7 +140,8 @@ namespace Lox
         }
         public object VisitVarStmt(Var stmt)
         {
-            object value = null;
+            object value = uninitialised;
+
             if (stmt.Initialiser is not null)
             {
                 value = InterpreterHelpers.Evaluate(this, stmt.Initialiser);
