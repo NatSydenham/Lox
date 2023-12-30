@@ -1,19 +1,20 @@
-﻿using Lox.Tokens;
+﻿using static Lox.InterpreterHelpers;
+using static Lox.Tokens.TokenType;
 
 namespace Lox
 {
     public class Interpreter : IExprVisitor<object>, IStmtVisitor<object>
     {
-        private readonly Environment env = new();
+        private Environment env = new(null);
 
         public object VisitBinaryExpr(Binary expr)
         {
-            var left = Evaluate(expr.Left);
-            var right = Evaluate(expr.Right);
+            var left = InterpreterHelpers.Evaluate(this, expr.Left);
+            var right = InterpreterHelpers.Evaluate(this, expr.Right);
 
             switch (expr.Op.Type)
             {
-                case TokenType.PLUS:
+                case PLUS:
                     if (left is double && right is double)
                     {
                         return (double)left + (double)right;
@@ -23,56 +24,61 @@ namespace Lox
                         return $"{left}{right}";
                     }
                     throw new RuntimeError(expr.Op, "Operands must be two numbers or at least one string");
-                case TokenType.MINUS:
+                case MINUS:
                     CheckNumberOperands(expr.Op, left, right);
                     return (double)left - (double)right;
-                case TokenType.COMMA:
+                case COMMA:
                     return right;
-                case TokenType.SLASH:
+                case SLASH:
                     CheckNumberOperands(expr.Op, left, right);
-                    if ((double) right == 0)
+                    if ((double)right == 0)
                     {
                         throw new RuntimeError(expr.Op, "Cannot divide by zero");
                     }
                     return (double)left / (double)right;
-                case TokenType.STAR:
+                case STAR:
                     CheckNumberOperands(expr.Op, left, right);
                     return (double)left * (double)right;
-                case TokenType.LESS:
+                case LESS:
                     CheckNumberOperands(expr.Op, left, right);
                     return (double)left < (double)right;
-                case TokenType.GREATER:
+                case GREATER:
                     CheckNumberOperands(expr.Op, left, right);
                     return (double)left > (double)right;
-                case TokenType.LESS_EQUAL:
+                case LESS_EQUAL:
                     CheckNumberOperands(expr.Op, left, right);
                     return (double)left <= (double)right;
-                case TokenType.GREATER_EQUAL:
+                case GREATER_EQUAL:
                     CheckNumberOperands(expr.Op, left, right);
                     return (double)left >= (double)right;
-                case TokenType.EQUAL_EQUAL:
+                case EQUAL_EQUAL:
                     return IsEqual(left, right);
-                case TokenType.BANG_EQUAL:
+                case BANG_EQUAL:
                     return !IsEqual(left, right);
             }
 
             return null;
         }
 
-        public object VisitConditionalExpr(Conditional expr) => IsTruthy(Evaluate(expr.Left)) ? Evaluate(expr.ThenBranch) : Evaluate(expr.ElseBranch);
-        public object VisitGroupingExpr(Grouping expr) => Evaluate(expr.Expression);
+        public object VisitConditionalExpr(Conditional expr) =>
+            IsTruthy(InterpreterHelpers.Evaluate(this, expr.Left)) ?
+                InterpreterHelpers.Evaluate(this, expr.ThenBranch) :
+                InterpreterHelpers.Evaluate(this, expr.ElseBranch);
+        public object VisitGroupingExpr(Grouping expr) 
+            => InterpreterHelpers.Evaluate(this, expr.Expression);
 
-        public object VisitLiteralExpr(Literal expr) => expr.Value;
+        public object VisitLiteralExpr(Literal expr) 
+            => expr.Value;
         public object VisitUnaryExpr(Unary expr)
         {
-            var right = Evaluate(expr.Right);
+            var right = InterpreterHelpers.Evaluate(this, expr.Right);
 
             switch (expr.Op.Type)
             {
-                case TokenType.MINUS:
+                case MINUS:
                     CheckNumberOperand(expr.Op, right);
                     return -(double)right;
-                case TokenType.BANG:
+                case BANG:
                     return !IsTruthy(right);
             }
 
@@ -81,7 +87,7 @@ namespace Lox
 
         public object VisitAssignExpr(Assign expr)
         {
-            var value = Evaluate(expr.Value);
+            var value = InterpreterHelpers.Evaluate(this, expr.Value);
             env.Assign(expr.Name, value);
             return value;
         }
@@ -91,16 +97,35 @@ namespace Lox
             return env.Get(expr.Name);
         }
 
-
         public object VisitExpressionStmt(Expression stmt)
         {
-            Evaluate(stmt.Expr);
+            InterpreterHelpers.Evaluate(this, stmt.Expr);
+            return null;
+        }
+
+        public object VisitBlockStmt(Block block)
+        {
+            var previous = this.env;
+            try
+            {
+                this.env = new Environment(this.env);
+
+                foreach (var stmt in block.Statements)
+                {
+                    InterpreterHelpers.Execute(this, stmt);
+                }
+            } 
+            finally
+            {
+                this.env = previous;
+            }
+
             return null;
         }
 
         public object VisitPrintStmt(Print stmt)
         {
-            var value = Evaluate(stmt.Expr);
+            var value = InterpreterHelpers.Evaluate(this, stmt.Expr);
             Console.WriteLine(Stringify(value));
             return null;
         }
@@ -109,7 +134,7 @@ namespace Lox
             object value = null;
             if (stmt.Initialiser is not null)
             {
-                value = Evaluate(stmt.Initialiser);
+                value = InterpreterHelpers.Evaluate(this, stmt.Initialiser);
             }
 
             env.Define(stmt.Name.Lexeme, value);
@@ -120,90 +145,15 @@ namespace Lox
         {
             try
             {
-                foreach(var stmt in statements)
+                foreach (var stmt in statements)
                 {
-                    Execute(stmt);
+                    InterpreterHelpers.Execute(this, stmt);
                 }
             }
-            catch(RuntimeError err)
+            catch (RuntimeError err)
             {
                 Program.RuntimeError(err);
             }
-        }
-
-        private void Execute(Stmt stmt)
-        {
-            stmt.Accept(this);
-        }
-
-        private string Stringify(object? value)
-        {
-            if (value is null)
-            {
-                return "nil";
-            }
-            
-            if (value is double)
-            {
-                var text = value.ToString();
-                if (text.EndsWith(".0"))
-                {
-                    text = text.Substring(0, text.Length - 2);
-                }
-                return text;
-            }
-
-            return value.ToString()!;
-        }
-
-        private void CheckNumberOperand(Token op, object operand)
-        {
-            if (operand is double)
-            {
-                return;
-            }
-
-            throw new RuntimeError(op, "Operand must be a number.");
-        }
-
-        private void CheckNumberOperands(Token op, object? left, object? right)
-        {
-            if (left is double && right is double)
-            {
-                return;
-            }
-
-            throw new RuntimeError(op, "Operands must be numbers");
-        }
-
-        private object Evaluate(Expr expression) => expression.Accept(this);
-
-        // nil or false is falsy, everything else is truthy.
-        private bool IsTruthy(object? obj)
-        {
-            if (obj == null)
-            {
-                return false;
-            }
-
-            if (obj is bool)
-            {
-                return (bool)obj;
-            }
-
-            return true;
-        }
-
-        private bool IsEqual(object? left, object? right)
-        {
-            if (left is null && right is null)
-            {
-                return true;
-            }
-
-            if (left is null) return false;
-
-            return left.Equals(right);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Lox.Tokens;
+using static Lox.Tokens.TokenType;
 
 namespace Lox
 {
@@ -26,7 +27,7 @@ namespace Lox
         {
             try
             {
-                if (Match(TokenType.VAR))
+                if (Match(VAR))
                 {
                     return VarDeclaration();
                 }
@@ -44,38 +45,56 @@ namespace Lox
 
         private Stmt Statement()
         {
-            if (Match(TokenType.PRINT)) {
+            if (Match(PRINT)) {
                 return PrintStatement();
+            }
+            if (Match(LEFT_BRACE))
+            {
+                return new Block { Statements = BlockStatement() };
             }
 
             return ExpressionStatement();
         }
 
+        private List<Stmt> BlockStatement()
+        {
+            var statements = new List<Stmt>();
+            while(!Check(RIGHT_BRACE) && !IsAtEnd())
+            {
+                // Declaration has lowest precedence, so start evaluating statements again as lowest precedence.
+                statements.Add(Declaration());
+            }
+
+            Consume(RIGHT_BRACE, "Expect '}' at end of block");
+
+            return statements;
+        }
+
         private Stmt ExpressionStatement()
         {
             var value = Expression();
-            Consume(TokenType.SEMICOLON, "Expect ';' after expression");
+            Consume(SEMICOLON, "Expect ';' after expression");
             return new Expression { Expr = value };
         }
 
         private Stmt PrintStatement()
         {
             var value = Expression();
-            Consume(TokenType.SEMICOLON, "Expect ';' after value");
+            Consume(SEMICOLON, "Expect ';' after value");
             return new Print { Expr = value };
         }
 
         private Stmt VarDeclaration()
         {
-            var name = Consume(TokenType.IDENTIFIER, "Expect variable name.");
+            var name = Consume(IDENTIFIER, "Expect variable name.");
             Expr initialiser = null;
 
-            if (Match(TokenType.EQUAL))
+            if (Match(EQUAL))
             {
                 initialiser = Expression();
             }
 
-            Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+            Consume(SEMICOLON, "Expect ';' after variable declaration.");
             return new Var { Initialiser = initialiser, Name = name };
         }
 
@@ -86,7 +105,7 @@ namespace Lox
         private Expr Comma()
         {
             var expr = Assignment();
-            while (Match(TokenType.COMMA))
+            while (Match(COMMA))
             {
                 var op = Previous();
                 var right = Assignment();
@@ -101,7 +120,7 @@ namespace Lox
         {
             var expr = Conditional();
 
-            if (Match(TokenType.EQUAL))
+            if (Match(EQUAL))
             {
                 var equals = Previous();
                 var value = Assignment();
@@ -121,10 +140,10 @@ namespace Lox
         private Expr Conditional()
         {
             var expr = Equality();
-            if (Match(TokenType.QUESTION))
+            if (Match(QUESTION))
             {
                 var then = Expression();
-                Consume(TokenType.COLON, "Expect ':' after then branch of conditional");
+                Consume(COLON, "Expect ':' after then branch of conditional");
                 var elseBranch = Conditional();
                 expr = new Conditional { Left = expr, ThenBranch = then, ElseBranch = elseBranch };
             }
@@ -135,7 +154,7 @@ namespace Lox
         private Expr Equality()
         {
             var expr = Comparison();
-            while (Match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL))
+            while (Match(BANG_EQUAL, EQUAL_EQUAL))
             {
                 var op = Previous();
                 var right = Comparison();
@@ -148,7 +167,7 @@ namespace Lox
         private Expr Comparison()
         {
             var expr = Term();
-            while (Match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS_EQUAL, TokenType.LESS))
+            while (Match(GREATER, GREATER_EQUAL, LESS_EQUAL, LESS))
             {
                 var op = Previous();
                 var right = Term();
@@ -161,7 +180,7 @@ namespace Lox
         private Expr Term()
         {
             var expr = Factor();
-            while (Match(TokenType.MINUS, TokenType.PLUS))
+            while (Match(MINUS, PLUS))
             {
                 var op = Previous();
                 var right = Factor();
@@ -174,7 +193,7 @@ namespace Lox
         private Expr Factor()
         {
             var expr = Unary();
-            while (Match(TokenType.SLASH, TokenType.STAR))
+            while (Match(SLASH, STAR))
             {
                 var op = Previous();
                 var right = Unary();
@@ -185,7 +204,7 @@ namespace Lox
 
         private Expr Unary()
         {
-            if (Match(TokenType.BANG, TokenType.MINUS))
+            if (Match(BANG, MINUS))
             {
                 return new Unary { Op = Previous(), Right = Unary() };
             }
@@ -195,61 +214,61 @@ namespace Lox
 
         private Expr Primary()
         {
-            if (Match(TokenType.FALSE))
+            if (Match(FALSE))
             {
                 return new Literal { Value = false };
             }
 
-            if (Match(TokenType.TRUE))
+            if (Match(TRUE))
             {
                 return new Literal { Value = true };
             }
 
-            if (Match(TokenType.NIL))
+            if (Match(NIL))
             {
                 return new Literal { Value = null };
             }
 
-            if (Match(TokenType.NUMBER, TokenType.STRING))
+            if (Match(NUMBER, STRING))
             {
                 return new Literal { Value = Previous().Literal };
             }
 
-            if (Match(TokenType.IDENTIFIER))
+            if (Match(IDENTIFIER))
             {
                 return new Variable { Name = Previous() };
             }
 
-            if (Match(TokenType.LEFT_PAREN))
+            if (Match(LEFT_PAREN))
             {
                 var expr = Expression();
-                Consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
+                Consume(RIGHT_PAREN, "Expect ')' after expression.");
                 return new Grouping { Expression = expr };
             }
 
 
-            if (Match(TokenType.BANG, TokenType.BANG_EQUAL))
+            if (Match(BANG, BANG_EQUAL))
             {
                 Error(Previous(), "Missing left hand operand");
                 Equality();
                 return null;
             }
 
-            if (Match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL))
+            if (Match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL))
             {
                 Error(Previous(), "Missing left hand operand");
                 Comparison();
                 return null;
             }
 
-            if (Match(TokenType.PLUS))
+            if (Match(PLUS))
             {
                 Error(Previous(), "Missing left hand operand");
                 Term();
                 return null;
             }
 
-            if (Match(TokenType.STAR, TokenType.SLASH))
+            if (Match(STAR, SLASH))
             {
                 Error(Previous(), "Missing left hand operand");
                 Factor();
@@ -306,7 +325,7 @@ namespace Lox
         }
 
         private bool IsAtEnd()
-            => Peek().Type == TokenType.EOF;
+            => Peek().Type == EOF;
 
         private Token Peek()
             => tokens[current];
@@ -325,21 +344,21 @@ namespace Lox
             Advance();
             while (!IsAtEnd())
             {
-                if (Previous().Type == TokenType.SEMICOLON)
+                if (Previous().Type == SEMICOLON)
                 {
                     return;
                 }
 
                 switch (Peek().Type)
                 {
-                    case TokenType.CLASS:
-                    case TokenType.FUN:
-                    case TokenType.VAR:
-                    case TokenType.FOR:
-                    case TokenType.IF:
-                    case TokenType.WHILE:
-                    case TokenType.PRINT:
-                    case TokenType.RETURN:
+                    case CLASS:
+                    case FUN:
+                    case VAR:
+                    case FOR:
+                    case IF:
+                    case WHILE:
+                    case PRINT:
+                    case RETURN:
                         return;
                 }
 
