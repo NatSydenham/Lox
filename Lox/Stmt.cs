@@ -18,6 +18,7 @@ namespace Lox
         T VisitExpressionStmt(Expression stmt);
         T VisitIfStmt(If stmt);
         T VisitPrintStmt(Print stmt);
+        T VisitWhileStmt(While stmt);
         T VisitVarStmt(Var stmt);
     }
 
@@ -60,6 +61,17 @@ namespace Lox
         public override T Accept<T>(IStmtVisitor<T> visitor)
         {
             return visitor.VisitPrintStmt(this);
+        }
+    }
+
+    public class While : Stmt
+    {
+        public Expr Expr { get; init; }
+        public Stmt Body { get; init; }
+
+        public override T Accept<T>(IStmtVisitor<T> visitor)
+        {
+            return visitor.VisitWhileStmt(this);
         }
     }
 

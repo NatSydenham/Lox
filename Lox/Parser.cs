@@ -49,6 +49,10 @@ namespace Lox
             {
                 return PrintStatement();
             }
+            if (Match(WHILE))
+            {
+                return WhileStatement();
+            }
             if (Match(LEFT_BRACE))
             {
                 return new Block { Statements = BlockStatement() };
@@ -57,12 +61,19 @@ namespace Lox
             {
                 return IfStatement();
             }
-            if (Match(AND))
-            {
-
-            }
 
             return ExpressionStatement();
+        }
+
+        private Stmt WhileStatement()
+        {
+            Consume(LEFT_PAREN, "Expect '(' before condition");
+            var condition = Expression();
+            Consume(RIGHT_PAREN, "Expect ')' after condition");
+
+            var body = Statement();
+
+            return new While { Expr = condition, Body = body };
         }
 
         private Stmt IfStatement()

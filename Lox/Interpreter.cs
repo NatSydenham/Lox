@@ -172,6 +172,16 @@ namespace Lox
             return null;
         }
 
+        public object VisitWhileStmt(While stmt)
+        {
+            while (IsTruthy(InterpreterHelpers.Evaluate(this, stmt.Expr)))
+            {
+                InterpreterHelpers.Execute(this, stmt.Body);
+            }
+
+            return null;
+        }
+
         public object VisitIfStmt(If stmt)
         {
             if (IsTruthy(InterpreterHelpers.Evaluate(this, stmt.Expr)))
@@ -201,7 +211,5 @@ namespace Lox
                 Program.RuntimeError(err);
             }
         }
-
-
     }
 }
