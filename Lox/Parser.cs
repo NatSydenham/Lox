@@ -45,21 +45,42 @@ namespace Lox
 
         private Stmt Statement()
         {
-            if (Match(PRINT)) {
+            if (Match(PRINT))
+            {
                 return PrintStatement();
             }
             if (Match(LEFT_BRACE))
             {
                 return new Block { Statements = BlockStatement() };
             }
+            if (Match(IF))
+            {
+                return IfStatement();
+            }
 
             return ExpressionStatement();
+        }
+
+        private Stmt IfStatement()
+        {
+            Consume(LEFT_PAREN, "Expect '(' before condition.");
+            var condition = Expression();
+            Consume(RIGHT_PAREN, "Expect ')' after condition.");
+            var thenBranch = Statement();
+            Stmt elseBranch = null;
+
+            if (Match(ELSE))
+            {
+                elseBranch = Statement();
+            }
+
+            return new If { Expr = condition, ThenBranch = thenBranch, ElseBranch = elseBranch };
         }
 
         private List<Stmt> BlockStatement()
         {
             var statements = new List<Stmt>();
-            while(!Check(RIGHT_BRACE) && !IsAtEnd())
+            while (!Check(RIGHT_BRACE) && !IsAtEnd())
             {
                 // Declaration has lowest precedence, so start evaluating statements again as lowest precedence.
                 statements.Add(Declaration());

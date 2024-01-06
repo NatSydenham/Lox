@@ -29,6 +29,7 @@
             {
                 "Block      : List<Stmt> statements",
                 "Expression : Expr expr",
+                "If         : Expr expr, Stmt thenBranch, Stmt elseBranch",
                 "Print      : Expr expr",
                 "Var        : Token name, Expr initialiser"
             });

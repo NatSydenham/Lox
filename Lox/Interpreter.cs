@@ -151,6 +151,21 @@ namespace Lox
             return null;
         }
 
+        public object VisitIfStmt(If stmt)
+        {
+            if (IsTruthy(InterpreterHelpers.Evaluate(this, stmt.Expr)))
+            {
+                InterpreterHelpers.Execute(this, stmt.ThenBranch);
+
+            }
+            else if (stmt.ElseBranch is not null)
+            {
+                InterpreterHelpers.Execute(this, stmt.ElseBranch);
+            }
+
+            return null;    
+        }
+
         public void Interpret(List<Stmt> statements)
         {
             try
