@@ -53,6 +53,10 @@ namespace Lox
             {
                 return WhileStatement();
             }
+            if (Match(FOR))
+            {
+                return ForStatement();
+            }
             if (Match(LEFT_BRACE))
             {
                 return new Block { Statements = BlockStatement() };
@@ -67,20 +71,79 @@ namespace Lox
 
         private Stmt WhileStatement()
         {
-            Consume(LEFT_PAREN, "Expect '(' before condition");
+            Consume(LEFT_PAREN, "Expect '(' after while.");
             var condition = Expression();
-            Consume(RIGHT_PAREN, "Expect ')' after condition");
+            Consume(RIGHT_PAREN, "Expect ')' after while condition.");
 
             var body = Statement();
 
             return new While { Expr = condition, Body = body };
         }
 
+        private Stmt ForStatement()
+        {
+            Consume(LEFT_PAREN, "Expect '(' after for.");
+            Stmt initialiser = null;
+            if (Match(VAR))
+            {
+                initialiser = VarDeclaration();
+            }
+            else
+            {
+                initialiser = ExpressionStatement();
+            }
+
+            Expr condition = null;
+
+            if (!Check(SEMICOLON))
+            {
+                condition = Expression();
+            }
+
+            Consume(SEMICOLON, "Expect ';' after loop condition.");
+
+            Expr increment = null;
+
+            if (!Check(RIGHT_PAREN))
+            {
+                increment = Expression();
+            }
+
+            Consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+            var body = Statement();
+
+            if (increment != null)
+            {
+                body = new Block
+                {
+                    Statements = new List<Stmt> { body, new Expression { Expr = increment } }
+                };
+            }
+
+            if (condition is null)
+            {
+                condition = new Literal { Value = true };
+            }
+
+            body = new While { Expr = condition, Body = body };
+
+            if (initialiser is not null)
+            {
+                body = new Block
+                {
+                    Statements = new List<Stmt> { initialiser, body }
+                };
+            }
+
+            return body;
+        }
+
         private Stmt IfStatement()
         {
-            Consume(LEFT_PAREN, "Expect '(' before condition.");
+            Consume(LEFT_PAREN, "Expect '(' after if.");
             var condition = Expression();
-            Consume(RIGHT_PAREN, "Expect ')' after condition.");
+            Consume(RIGHT_PAREN, "Expect ')' after if condition.");
             var thenBranch = Statement();
             Stmt elseBranch = null;
 
@@ -181,7 +244,7 @@ namespace Lox
             {
                 var op = Previous();
                 var right = And();
-                
+
                 expr = new Logical { Left = expr, Op = op, Right = right };
             }
 
