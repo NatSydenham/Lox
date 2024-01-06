@@ -62,6 +62,27 @@ namespace Lox
             return null;
         }
 
+        public object VisitLogicalExpr(Logical expr)
+        {
+            var left = InterpreterHelpers.Evaluate(this, expr.Left);
+            if (expr.Op.Type == OR)
+            {
+                if (IsTruthy(left))
+                {
+                    return left;
+                }
+            }
+            else
+            {
+                if (!IsTruthy(left))
+                {
+                    return left;
+                }
+            }
+
+            return InterpreterHelpers.Evaluate(this, expr.Right);
+        }
+
         public object VisitConditionalExpr(Conditional expr) =>
             IsTruthy(InterpreterHelpers.Evaluate(this, expr.Left)) ?
                 InterpreterHelpers.Evaluate(this, expr.ThenBranch) :
@@ -180,5 +201,7 @@ namespace Lox
                 Program.RuntimeError(err);
             }
         }
+
+
     }
 }

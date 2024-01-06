@@ -20,6 +20,7 @@
                 "Binary      : Expr left, Token op, Expr right",
                 "Grouping    : Expr expression",
                 "Literal     : object value",
+                "Logical     : Expr left, Token op, Expr right",
                 "Unary       : Token op, Expr right",
                 "Conditional : Expr left, Expr thenBranch, Expr elseBranch",
                 "Variable    : Token name"

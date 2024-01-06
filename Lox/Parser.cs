@@ -57,6 +57,10 @@ namespace Lox
             {
                 return IfStatement();
             }
+            if (Match(AND))
+            {
+
+            }
 
             return ExpressionStatement();
         }
@@ -139,7 +143,7 @@ namespace Lox
 
         private Expr Assignment()
         {
-            var expr = Conditional();
+            var expr = Or();
 
             if (Match(EQUAL))
             {
@@ -153,6 +157,36 @@ namespace Lox
                 }
 
                 Error(equals, "Invalid assignment target.");
+            }
+
+            return expr;
+        }
+
+        private Expr Or()
+        {
+            var expr = And();
+
+            while (Match(OR))
+            {
+                var op = Previous();
+                var right = And();
+                
+                expr = new Logical { Left = expr, Op = op, Right = right };
+            }
+
+            return expr;
+        }
+
+        private Expr And()
+        {
+            var expr = Conditional();
+
+            while (Match(AND))
+            {
+                var op = Previous();
+                var right = Conditional();
+
+                expr = new Logical { Left = expr, Op = op, Right = right };
             }
 
             return expr;
