@@ -28,6 +28,7 @@ namespace Lox
             if (enclosing is not null)
             {
                 enclosing.Assign(name, value);
+                return;
             }
 
             throw new RuntimeError(name, $"Undefined variable {name.Lexeme}.");

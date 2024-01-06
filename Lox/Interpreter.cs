@@ -159,6 +159,7 @@ namespace Lox
             Console.WriteLine(Stringify(value));
             return null;
         }
+
         public object VisitVarStmt(Var stmt)
         {
             object value = uninitialised;

@@ -83,8 +83,13 @@ namespace Lox
         private Stmt ForStatement()
         {
             Consume(LEFT_PAREN, "Expect '(' after for.");
-            Stmt initialiser = null;
-            if (Match(VAR))
+            Stmt initialiser;
+
+            if (Match(SEMICOLON))
+            {
+                initialiser = null;
+            }
+            else if (Match(VAR))
             {
                 initialiser = VarDeclaration();
             }
