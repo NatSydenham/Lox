@@ -1,4 +1,6 @@
-﻿namespace Lox
+﻿using Lox.Exceptions;
+
+namespace Lox
 {
     public class LoxFunction : ICallable
     {
@@ -18,12 +20,20 @@
         {
             var environment = new Environment(interpreter.globals);
 
-            for(var i = 0; i < declaration.Params.Count; i++)
+            for (var i = 0; i < declaration.Params.Count; i++)
             {
                 environment.Define(declaration.Params[i].Lexeme, args[i]);
             }
 
-            InterpreterHelpers.ExecuteBlock(interpreter, declaration.Body, environment);
+            try
+            {
+                InterpreterHelpers.ExecuteBlock(interpreter, declaration.Body, environment);
+            }
+            catch (ReturnValue returnValue)
+            {
+                return returnValue.returnValue;
+            }
+
             return null;
         }
 

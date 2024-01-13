@@ -1,4 +1,5 @@
-﻿using Lox.NativeFunctions;
+﻿using Lox.Exceptions;
+using Lox.NativeFunctions;
 using static Lox.InterpreterHelpers;
 using static Lox.Tokens.TokenType;
 
@@ -228,6 +229,18 @@ namespace Lox
             return null;
         }
 
+        public object VisitReturnStmt(Return stmt)
+        {
+            object val = null;
+
+            if (stmt.ReturnValue is not null)
+            {
+                val = InterpreterHelpers.Evaluate(this, stmt.ReturnValue);
+            }
+
+            throw new ReturnValue(val);
+        }
+
         public void Interpret(List<Stmt> statements)
         {
             try
@@ -242,6 +255,7 @@ namespace Lox
                 Program.RuntimeError(err);
             }
         }
+
 
     }
 }

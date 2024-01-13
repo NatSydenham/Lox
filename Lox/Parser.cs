@@ -1,4 +1,5 @@
-﻿using Lox.Tokens;
+﻿using Lox.Exceptions;
+using Lox.Tokens;
 using System.Threading.Tasks.Dataflow;
 using static Lox.Tokens.TokenType;
 
@@ -69,6 +70,10 @@ namespace Lox
             {
                 return IfStatement();
             }
+            if (Match(RETURN))
+            {
+                return ReturnStatement();
+            }
 
             return ExpressionStatement();
         }
@@ -82,6 +87,20 @@ namespace Lox
             var body = Statement();
 
             return new While { Expr = condition, Body = body };
+        }
+
+        private Stmt ReturnStatement()
+        {
+            var keyword = Previous();
+            Expr val = null;
+
+            if (!Check(SEMICOLON))
+            {
+                val = Expression();
+            }
+
+            Consume(SEMICOLON, "Expect ';' after return value");
+            return new Return { Keyword = keyword, ReturnValue = val };
         }
 
         private Stmt ForStatement()

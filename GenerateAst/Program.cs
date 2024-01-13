@@ -34,6 +34,7 @@
                 "Function   : Token name, List<Token> params, List<Stmt> body",
                 "If         : Expr expr, Stmt thenBranch, Stmt elseBranch",
                 "Print      : Expr expr",
+                "Return     : Token keyword, Expr returnValue",
                 "While      : Expr expr, Stmt body",
                 "Var        : Token name, Expr initialiser"
             });
