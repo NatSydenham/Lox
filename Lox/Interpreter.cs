@@ -223,7 +223,7 @@ namespace Lox
         }
         public object VisitFunctionStmt(Function stmt)
         {
-            var fun = new LoxFunction(stmt);
+            var fun = new LoxFunction(stmt, env);
             env.Define(stmt.Name.Lexeme, fun);
 
             return null;
