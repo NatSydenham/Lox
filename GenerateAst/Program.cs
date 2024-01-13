@@ -13,11 +13,12 @@
             }
 
             var outDir = args[0];
-            
+
             DefineAst(outDir, "Expr", new List<string>
             {
                 "Assign      : Token name, Expr value",
                 "Binary      : Expr left, Token op, Expr right",
+                "Call        : Expr callee, Token paren, List<Expr> arguments",
                 "Grouping    : Expr expression",
                 "Literal     : object value",
                 "Logical     : Expr left, Token op, Expr right",
@@ -30,6 +31,7 @@
             {
                 "Block      : List<Stmt> statements",
                 "Expression : Expr expr",
+                "Function   : Token name, List<Token> params, List<Stmt> body",
                 "If         : Expr expr, Stmt thenBranch, Stmt elseBranch",
                 "Print      : Expr expr",
                 "While      : Expr expr, Stmt body",

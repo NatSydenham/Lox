@@ -50,6 +50,23 @@ namespace Lox
             stmt.Accept(interpreter);
         }
 
+        public static void ExecuteBlock(this Interpreter interpreter, List<Stmt> stmts, Environment env) {
+            var previous = interpreter.env;
+            try
+            {
+                interpreter.env = new Environment(env);
+
+                foreach (var stmt in stmts)
+                {
+                    Execute(interpreter, stmt);
+                }
+            }
+            finally
+            {
+                interpreter.env = previous;
+            }
+        }
+
         // nil or false is falsy, everything else is truthy.
         public static bool IsTruthy(object? obj)
         {

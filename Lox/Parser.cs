@@ -1,4 +1,5 @@
 ﻿using Lox.Tokens;
+using System.Threading.Tasks.Dataflow;
 using static Lox.Tokens.TokenType;
 
 namespace Lox
@@ -31,9 +32,12 @@ namespace Lox
                 {
                     return VarDeclaration();
                 }
+                if (Match(FUN))
+                {
+                    return FunDeclaration("function");
+                }
 
                 return Statement();
-
             }
 
             catch (ParseError e)
@@ -202,6 +206,34 @@ namespace Lox
             return new Var { Initialiser = initialiser, Name = name };
         }
 
+        private Stmt FunDeclaration(string kind)
+        {
+            var name = Consume(IDENTIFIER, $"Expect {kind} name");
+            Consume(LEFT_PAREN, $"Expect '(' after {kind} name.");
+
+            var parameters = new List<Token>();
+            if (!Check(RIGHT_PAREN))
+            {
+                do
+                {
+                    if (parameters.Count >= 255)
+                    {
+                        Error(Peek(), "Can't have more than 255 parameters");
+                    }
+
+                    parameters.Add(Consume(IDENTIFIER, "Expect parameter name"));
+                }
+                while (Match(COMMA));
+            }
+
+            Consume(RIGHT_PAREN, "Expect ')' after parameter list");
+            Consume(LEFT_BRACE, $"Expect '{{' before {kind} body");
+
+            var body = BlockStatement();
+
+            return new Function { Body = body, Name = name, Params = parameters };
+        }
+
         private Expr Expression()
         {
             return Comma();
@@ -343,7 +375,46 @@ namespace Lox
                 return new Unary { Op = Previous(), Right = Unary() };
             }
 
-            return Primary();
+            return Call();
+        }
+
+        private Expr Call()
+        {
+            var expr = Primary();
+            while (true)
+            {
+                if (Match(LEFT_PAREN))
+                {
+                    expr = FinishCall(expr);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return expr;
+        }
+
+        private Expr FinishCall(Expr callee)
+        {
+            var args = new List<Expr>();
+            if (!Check(RIGHT_PAREN))
+            {
+                do
+                {
+                    if (args.Count >= 255)
+                    {
+                        Error(Peek(), "Can't have more than 255 arguments");
+                    }
+
+                    args.Add(Conditional());
+                }
+                while (Match(COMMA));
+            }
+
+            var paren = Consume(RIGHT_PAREN, "Expect ')' after arguments");
+            return new Call { Callee = callee, Paren = paren, Arguments = args };
         }
 
         private Expr Primary()

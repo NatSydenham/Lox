@@ -1,13 +1,22 @@
-﻿using static Lox.InterpreterHelpers;
+﻿using Lox.NativeFunctions;
+using static Lox.InterpreterHelpers;
 using static Lox.Tokens.TokenType;
 
 namespace Lox
 {
     public class Interpreter : IExprVisitor<object>, IStmtVisitor<object>
     {
-        private Environment env = new(null);
+        public readonly Environment globals = new Environment(null);
+        public Environment env;
 
         private static object uninitialised = new object();
+
+
+        public Interpreter()
+        {
+            env = globals;
+            env.Define("clock", new Clock());
+        }
 
         public object VisitBinaryExpr(Binary expr)
         {
@@ -127,6 +136,34 @@ namespace Lox
             return value;
         }
 
+        public object VisitCallExpr(Call expr)
+        {
+            var callee = InterpreterHelpers.Evaluate(this, expr.Callee);
+            var args = new List<object>();
+            
+            foreach(var arg in expr.Arguments)
+            {
+                args.Add(InterpreterHelpers.Evaluate(this, arg));
+            }
+
+            if (callee is not ICallable)
+            {
+                throw new RuntimeError(expr.Paren, "Can only call functions and classes");
+            }
+
+            var fun = (ICallable)callee;
+
+            var arity = fun.Arity();
+
+            if (args.Count != arity)
+            {
+                throw new RuntimeError(expr.Paren, $"Expected {arity} arguments but got {args.Count}.");
+            }
+
+            return fun.Call(this, args);
+           
+        }
+
         public object VisitExpressionStmt(Expression stmt)
         {
             InterpreterHelpers.Evaluate(this, stmt.Expr);
@@ -135,21 +172,7 @@ namespace Lox
 
         public object VisitBlockStmt(Block block)
         {
-            var previous = this.env;
-            try
-            {
-                this.env = new Environment(this.env);
-
-                foreach (var stmt in block.Statements)
-                {
-                    InterpreterHelpers.Execute(this, stmt);
-                }
-            } 
-            finally
-            {
-                this.env = previous;
-            }
-
+            InterpreterHelpers.ExecuteBlock(this, block.Statements, new Environment(env));
             return null;
         }
 
@@ -197,6 +220,13 @@ namespace Lox
 
             return null;    
         }
+        public object VisitFunctionStmt(Function stmt)
+        {
+            var fun = new LoxFunction(stmt);
+            env.Define(stmt.Name.Lexeme, fun);
+
+            return null;
+        }
 
         public void Interpret(List<Stmt> statements)
         {
@@ -212,5 +242,6 @@ namespace Lox
                 Program.RuntimeError(err);
             }
         }
+
     }
 }
